@@ -1,0 +1,90 @@
+version: "1.0"
+
+name: mcp-workbench
+services:
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    command:
+      - /surreal
+      - start
+      - --bind
+      - 0.0.0.0:8000
+      - --auth
+      - --log
+      - info
+      - --user
+      - ${SURREAL_USER}
+      - --pass
+      - ${SURREAL_PASS}
+      - file:/data/main.surql   # 開発: 永続ファイル。揮発は memory に変更
+    ports: ["8000:8000"]
+    volumes:
+      - surreal-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      - SURREAL_LOG=info
+
+  context7:
+    image: mcp/context7:latest
+    # Context7はMCPサーバ。必要に応じてAPIキー等の環境変数を渡す
+    environment:
+      # 例: 必要ならCONTEXT7_XXX=... を定義
+      - NODE_ENV=production
+    depends_on:
+      surrealdb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  serena:
+    # 公式リポジトリにDockerfile/compose例あり。最新版に合わせてビルド/参照
+    build:
+      context: ./serena    # ← リポジトリをクローンして配置（または image: を指定）
+      dockerfile: Dockerfile
+    environment:
+      - UV_SYSTEM_PYTHON=1
+      # 設定・ワークスペースのホストマウント推奨（例）
+    volumes:
+      - ./workspace:/workspace
+    working_dir: /workspace
+    depends_on:
+      surrealdb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  chrome-devtools:
+    image: node:20-bullseye
+    # npxでMCPサーバを起動。ホストChromeへ --browserUrl で接続
+    command: ["npx","-y","chrome-devtools-mcp@latest","--browserUrl","http://${HOST_IP}:9222"]
+    environment:
+      - HOST_IP=${HOST_IP}   # 例: 192.168.x.x を .env に
+      - NODE_ENV=production
+    # ブラウザはホストで「リモートデバッグポート 9222」を有効にして起動
+    depends_on:
+      surrealdb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  jsapp:
+    image: node:20-bullseye
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    command: ["bash","-lc","npm ci && npm run dev"]
+    environment:
+      - SURREAL_URL=http://surrealdb:8000
+      - SURREAL_NS=${SURREAL_NS}
+      - SURREAL_DB=${SURREAL_DB}
+      - SURREAL_USER=${SURREAL_USER}
+      - SURREAL_PASS=${SURREAL_PASS}
+    depends_on:
+      surrealdb:
+        condition: service_healthy
+    ports:
+      - "5173:5173"   # 例: Vite dev server
+
+volumes:
+  surreal-data:
