@@ -1,0 +1,27 @@
+{
+  "name": "bun + surrealdb (surrealkv)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/work",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "EditorConfig.EditorConfig",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  },
+  "postCreateCommand": "bun install || true",
+  "remoteEnv": {
+    "SURREAL_ENDPOINT": "http://db:8000",
+    "SURREAL_USER": "root",
+    "SURREAL_PASS": "root",
+    "SURREAL_NS": "app",
+    "SURREAL_DB": "appdb"
+  }
+}

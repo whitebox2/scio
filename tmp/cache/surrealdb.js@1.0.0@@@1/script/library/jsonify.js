@@ -1,0 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.jsonify = void 0;
+function jsonify(input) {
+    return JSON.parse(JSON.stringify(input));
+}
+exports.jsonify = jsonify;
+//# sourceMappingURL=jsonify.js.map

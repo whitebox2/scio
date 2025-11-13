@@ -1,0 +1,58 @@
+{
+  "module": "./esm/index.js",
+  "main": "./script/index.js",
+  "types": "./types/index.d.ts",
+  "name": "surrealdb.js",
+  "version": "1.0.0",
+  "description": "Javascript driver for SurrealDB",
+  "license": "Apache 2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/surrealdb/surrealdb.js.git"
+  },
+  "author": {
+    "name": "Tobie Morgan Hitchcock",
+    "url": "https://surrealdb.com"
+  },
+  "dependencies": {
+    "@icholy/duration": "^5.1.0",
+    "cbor-redux": "1.0.0",
+    "decimal.js": "^10.4.3",
+    "isows": "^1.0.4",
+    "semver": "^7.5.4",
+    "uuidv7": "0.6.3",
+    "zod": "*",
+    "ws": "^8.16.0"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8",
+    "utf-8-validate": "^6.0.3"
+  },
+  "devDependencies": {
+    "chalk": "^4.1.2",
+    "@types/node": "^18.7.18",
+    "@types/ws": "8.5.3",
+    "esbuild": "0.15.8",
+    "@types/semver": "^7.5.8"
+  },
+  "scripts": {
+    "test": "node test_runner.js",
+    "build:web": "esbuild ./esm/index.js --format=esm --minify --bundle --sourcemap --outfile=./web/index.js"
+  },
+  "browser": "./web/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./types/index.d.ts",
+        "default": "./esm/index.js"
+      },
+      "require": {
+        "types": "./types/index.d.ts",
+        "default": "./script/index.js"
+      }
+    }
+  }
+}
